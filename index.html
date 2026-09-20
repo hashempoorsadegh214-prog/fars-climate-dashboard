@@ -2,47 +2,30 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد اقلیمی استان فارس</title>
-    
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
-        #map { height: 400px; width: 100%; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ccc; }
-        #chartContainer { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
+        body { font-family: Tahoma, sans-serif; padding: 20px; }
+        .controls { margin-bottom: 20px; display: flex; gap: 15px; align-items: center; }
+        #map { height: 400px; width: 100%; border: 1px solid #ccc; margin-bottom: 20px; }
+        #chartWrapper { width: 100%; height: 300px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>داشبورد اقلیمی استان فارس</h1>
-        <p>تحلیل روند تغییرات دما بر اساس داده‌های CMIP6</p>
-    </header>
-
+    <h1>داشبورد اقلیمی استان فارس</h1>
     <div class="controls">
-        <label for="model-select">مدل:</label>
-        <select id="model-select"></select>
-        
-        <label for="scenario-select">سناریو:</label>
-        <select id="scenario-select"></select>
+        <label>مدل: <select id="model-select"></select></label>
+        <label>سناریو: <select id="scenario-select"></select></label>
     </div>
 
-    <!-- نقشه -->
     <div id="map"></div>
-
-    <!-- نمودار -->
-    <div id="chartContainer">
-        <canvas id="chartCanvas" height="100"></canvas>
+    <div id="chartWrapper">
+        <canvas id="tempChart"></canvas>
     </div>
 
-    <!-- کتابخانه‌ها -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- فایل جاوا اسکریپت اصلی -->
     <script src="app.js"></script>
 </body>
 </html>

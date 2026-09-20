@@ -5,38 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد اقلیمی استان فارس</title>
     
-    <!-- Leaflet CSS - بدون ویژگی‌های امنیتی اضافی -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <!-- استایل‌های شخصی شما -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
+        #map { height: 400px; width: 100%; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ccc; }
+        #chartContainer { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
+    </style>
 </head>
 <body>
 
     <header>
         <h1>داشبورد اقلیمی استان فارس</h1>
-        <p>تحلیل روند تغییرات دمای سالانه بر اساس مدل‌های CMIP6</p>
+        <p>تحلیل روند تغییرات دما بر اساس داده‌های CMIP6</p>
     </header>
 
     <div class="controls">
-        <label for="model-select">مدل: </label>
+        <label for="model-select">مدل:</label>
         <select id="model-select"></select>
         
-        <label for="scenario-select">سناریو: </label>
+        <label for="scenario-select">سناریو:</label>
         <select id="scenario-select"></select>
     </div>
 
-    <!-- محلی که نقشه یا نمودار شما در آن قرار می‌گیرد -->
-    <div id="map" style="height: 500px; width: 100%; margin-top: 20px;"></div>
+    <!-- نقشه -->
+    <div id="map"></div>
 
-    <!-- Leaflet JS - بدون ویژگی‌های امنیتی اضافی -->
+    <!-- نمودار -->
+    <div id="chartContainer">
+        <canvas id="chartCanvas" height="100"></canvas>
+    </div>
+
+    <!-- کتابخانه‌ها -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- کتابخانه Chart.js (اگر از آن استفاده می‌کنید، برای رسم نمودار ضروری است) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- فایل جاوا اسکریپت شما -->
+    <!-- فایل جاوا اسکریپت اصلی -->
     <script src="app.js"></script>
-
 </body>
 </html>

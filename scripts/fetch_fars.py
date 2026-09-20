@@ -1,84 +1,77 @@
+import os
+import json
 import cdsapi
 import xarray as xr
-import json
-import os
+import pandas as pd
 
-# آدرس کلی فایل‌های داده
-data_dir = 'data'
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
-
+# راه‌اندازی کلاینت کوپرنیک
 c = cdsapi.Client()
 
-# تنظیمات مدل‌ها و سناریوها
-# Note: Model names need to be exact as per CDS API documentation
-# Using common CMIP6 model names for the API.
-# For example, 'EC-Earth3-Veg' might be registered as 'ec_earth3_veg' or similar.
-# We'll use the more general names and adjust if the API rejects them.
-# Let's use the names as provided in CMIP6 documentation for clarity.
-# If these fail, we'll need to check the exact CDS API names.
-# Based on common CMIP6 naming, let's try these:
-models = ['ec_earth3', 'mpi_esm1_2_hr', 'mri_esm2_0'] 
-# Let's double-check the exact scenario names for CDS API
+models = ['ec_earth3', 'mpi_esm1_2_hr', 'mri_esm2_0']
 scenarios = ['ssp1_2_6', 'ssp2_4_5', 'ssp5_8_5']
+years = [str(y) for y in range(2025, 2036)]
 
-all_model_scenario_data = {}
+all_climate_data = {}
+
+print("شروع دریافت داده‌های واقعی اقلیمی از سرویس کوپرنیک (CMIP6)...")
 
 for model in models:
-    all_model_scenario_data[model] = {}
+    all_climate_data[model] = {}
     for scenario in scenarios:
-        print(f"Attempting to download data for: Model='{model}', Scenario='{scenario}'")
+        print(f"در حال دریافت مدل: {model} و سناریو: {scenario}...")
         
-        # Define a temporary file name
-        temp_file_name = f"{model}_{scenario}.nc"
+        output_file = f"temp_{model}_{scenario}.nc"
         
         try:
-            # Fetch data using CDS API
-            # Ensure the parameters match exactly what the API expects
-            # The 'area' parameter is [north, west, south, east]
-            # Using the previously defined bounds for Fars province
-            area_fars = [31.7, 50.5, 29.0, 55.8] 
-            
-            # Retrieve monthly temperature data
+            # درخواست داده واقعی از پایگاه داده کوپرنیک
             c.retrieve(
                 'projections-cmip6',
                 {
-                    'format': 'zip',
-                    'temporal_resolution': 'monthly',
+                    'format': 'netcdf',
+                    'class': 's1',
                     'experiment': scenario,
+                    'levelist': 'single',
                     'variable': 'near_surface_air_temperature',
                     'model': model,
-                    'area': area_fars,
+                    'date': [f"{y}-01-01/{y}-12-31" for y in years],
+                    'area': [31.5, 50.5, 27.0, 55.5], # محدوده جغرافیایی استان فارس [North, West, South, East]
                 },
-                temp_file_name)
+                output_file
+            )
             
-            # Open the downloaded NetCDF file using xarray
-            # xarray can open zip files directly if they contain a single .nc file
-            ds = xr.open_dataset(temp_file_name, engine='netcdf4')
-
-            # Calculate the mean annual temperature for the Fars region
-            # 'tas' is the variable for near-surface air temperature
-            # We group by year and then calculate the mean over lat and lon dimensions
-            yearly_mean_temp = ds['tas'].groupby('time.year').mean(dim=['lat', 'lon']).values.tolist()
+            # خواندن فایل NetCDF با xarray و محاسبه میانگین سالانه دمای استان فارس
+            ds = xr.open_dataset(output_file)
+            # فرض بر این است که متغیر دما tas یا مشابه است
+            var_name = 'tas' if 'tas' in ds else list(ds.data_vars)[0]
             
-            all_model_scenario_data[model][scenario] = yearly_mean_temp
+            # میانگین‌گیری فضایی روی استان فارس و گروه‌بندی بر اساس سال
+            ds_mean = ds[var_name].mean(dim=['lat', 'lon'], skipna=True)
+            df = ds_mean.to_dataframe().reset_index()
             
-            ds.close() # Close the dataset
-            os.remove(temp_file_name) # Clean up the temporary file
-            print(f"Successfully downloaded and processed data for {model} - {scenario}")
-
+            # استخراج سال و تبدیل دما از کلوین به سانتی‌گراد
+            df['year'] = pd.to_datetime(df['time']).dt.year
+            yearly_avg = df.groupby('year')[var_name].mean() - 273.15
+            
+            model_scenario_data = {}
+            for y in years:
+                if int(y) in yearly_avg.index:
+                    val = float(yearly_avg[int(y)])
+                    model_scenario_data[y] = round(val, 2)
+            
+            all_climate_data[model][scenario] = model_scenario_data
+            
+            # پاک کردن فایل موقت NetCDF
+            if os.path.exists(output_file):
+                os.remove(output_file)
+                
         except Exception as e:
-            print(f"Error downloading or processing data for {model} - {scenario}: {e}")
-            # Optionally, you can store an error indicator or skip this entry
-            all_model_scenario_data[model][scenario] = None # Indicate failure
+            print(f"خطا در دریافت مدل {model} و سناریو {scenario}: {e}")
+            # اگر در دریافت یک مورد خطا رخ داد، یک دیکشنری خالی یا خطا قرار ندهیم که برنامه کرش نکند
+            all_climate_data[model][scenario] = {}
 
+# ذخیره خروجی نهایی در فایل JSON واقعی پروژه
+os.makedirs('data', exist_ok=True)
+with open('data/fars_temp.json', 'w', encoding='utf-8') as f:
+    json.dump(all_climate_data, f, ensure_ascii=False, indent=4)
 
-# Define the final JSON output path
-output_json_path = os.path.join(data_dir, 'fars_temp.json')
-
-# Save the processed data into a JSON file
-# This structure will be: {model: {scenario: [yearly_temps]}}
-with open(output_json_path, 'w', encoding='utf-8') as f:
-    json.dump(all_model_scenario_data, f, indent=4, ensure_ascii=False)
-
-print(f"All data processing complete. Results saved to {output_json_path}")
+print("✅ پردازش تمام داده‌های واقعی اقلیمی به پایان رسید و در data/fars_temp.json ذخیره شد.")

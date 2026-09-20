@@ -2,10 +2,8 @@ name: Update Fars Climate Data
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day
     - cron: '0 0 * * *'
   workflow_dispatch:
-    # Allows manual triggering
 
 jobs:
   update_data:
@@ -21,11 +19,14 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install pandas requests cdsapi xarray # xarray اضافه شد
+      run: pip install pandas requests cdsapi xarray
+
+    - name: Create CDS API Configuration
+      run: |
+        echo "url: https://cds.climate.copernicus.eu/api" > ~/.cdsapirc
+        echo "key: ${{ secrets.CDSAPI_KEY }}" >> ~/.cdsapirc
 
     - name: Fetch Fars climate data
-      env:
-        CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
       run: python scripts/fetch_fars.py
 
     - name: Commit and push new data
@@ -33,7 +34,6 @@ jobs:
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
         git add data/fars_temp.json
-        # Check if there are any changes to commit
         if git diff --staged --quiet; then
           echo "No changes to commit."
         else

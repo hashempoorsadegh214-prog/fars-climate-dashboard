@@ -1,0 +1,17 @@
+{
+    "ec_earth3": {
+        "ssp1_2_6": null,
+        "ssp2_4_5": null,
+        "ssp5_8_5": null
+    },
+    "mpi_esm1_2_hr": {
+        "ssp1_2_6": null,
+        "ssp2_4_5": null,
+        "ssp5_8_5": null
+    },
+    "mri_esm2_0": {
+        "ssp1_2_6": null,
+        "ssp2_4_5": null,
+        "ssp5_8_5": null
+    }
+}

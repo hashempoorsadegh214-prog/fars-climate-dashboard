@@ -92,3 +92,18 @@ function drawChart() {
         }
     });
 }
+// کد عیب‌یاب - پس از لود داده‌ها اجرا می‌شود
+function debugData() {
+    if (climateData) {
+        console.log("مدل‌های موجود در فایل:", Object.keys(climateData));
+        const selectedM = modelSelect.value;
+        const selectedS = scenarioSelect.value;
+        console.log("مدل انتخاب شده:", selectedM, "| سناریوی انتخاب شده:", selectedS);
+        
+        if (climateData[selectedM]) {
+            console.log("سناریوهای این مدل:", Object.keys(climateData[selectedM]));
+            console.log("مقدار خام داده:", climateData[selectedM][selectedS]);
+        }
+    }
+}
+// این تابع را بعد از تابع drawChart صدا بزنید یا در کنسول مرورگر تایپ کنید: debugData()
